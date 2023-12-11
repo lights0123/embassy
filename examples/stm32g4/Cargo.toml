@@ -24,5 +24,8 @@ panic-probe = { version = "0.3", features = ["print-defmt"] }
 futures = { version = "0.3.17", default-features = false, features = ["async-await"] }
 heapless = { version = "0.8", default-features = false }
 
+bitflags = { version = "2.4.1", features = ["bytemuck"] }
+bytemuck = { version = "1.14.0", features = ["derive"] }
+
 [profile.release]
 debug = 2

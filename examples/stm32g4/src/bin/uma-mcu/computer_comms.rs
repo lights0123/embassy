@@ -14,6 +14,7 @@ use crate::state::{self, ControllerState, State};
 use crate::uma_protocol::{self, APIType, Faults};
 
 const SYNC_BYTES: &[u8] = &[0xAA, 0x55];
+const MAX_PACKET_SIZE: usize = 32;
 
 #[derive(Debug)]
 struct PacketWriter {
@@ -22,7 +23,7 @@ struct PacketWriter {
 }
 impl PacketWriter {
     fn new() -> PacketWriter {
-        let mut buf = [0; 32];
+        let mut buf = [0; MAX_PACKET_SIZE];
         buf[..SYNC_BYTES.len()].copy_from_slice(&SYNC_BYTES);
         PacketWriter { buf, number: 1 }
     }
@@ -38,9 +39,9 @@ impl PacketWriter {
         };
         self.number = self.number.wrapping_add(2);
         let packet_info = bytes_of(&packet_info);
-        let data = msg.encode();
         self.buf[written..][..packet_info.len()].copy_from_slice(packet_info);
         written += packet_info.len();
+        let data = msg.encode();
         self.buf[written..][..data.len()].copy_from_slice(data);
         written += data.len();
         // checksum
@@ -127,7 +128,7 @@ async fn cmd_reader<'d, T: Instance + 'd>(
     receiver: &mut cdc_acm::Receiver<'d, Driver<'d, T>>,
     state: &State,
 ) -> Result<(), EndpointError> {
-    let mut buf = [0; 32];
+    let mut buf = [0; MAX_PACKET_SIZE];
     loop {
         let size = receiver.read_packet(&mut buf).await?;
         let packet = &buf[..size];
@@ -187,7 +188,7 @@ pub fn init_usb(p: crate::UsbResources, spawner: Spawner, shared_state: &'static
         &mut statics.control_buf,
     );
 
-    let class = cdc_acm::CdcAcmClass::new(&mut builder, &mut statics.state, 64);
+    let class = cdc_acm::CdcAcmClass::new(&mut builder, &mut statics.state, MAX_PACKET_SIZE as u16);
 
     let usb = builder.build();
 

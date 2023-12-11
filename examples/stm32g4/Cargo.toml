@@ -26,6 +26,8 @@ heapless = { version = "0.8", default-features = false }
 
 bitflags = { version = "2.4.1", features = ["bytemuck"] }
 bytemuck = { version = "1.14.0", features = ["derive"] }
+assign-resources = "0.4.1"
+static_cell = "2.0.0"
 
 [profile.release]
 debug = 2

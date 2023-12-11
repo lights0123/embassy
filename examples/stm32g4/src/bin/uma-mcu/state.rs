@@ -36,5 +36,5 @@ impl Default for Computer {
 #[derive(Default, Debug, Clone)]
 pub struct State {
     pub controller: Cell<Option<Controller>>,
-    pub computer: Computer,
+    pub computer: Cell<Computer>,
 }

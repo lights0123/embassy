@@ -1,14 +1,25 @@
-use bytemuck::{Pod, Zeroable};
+use bytemuck::{bytes_of, try_from_bytes, Pod, Zeroable};
 
 pub trait APIType: Pod {
-    fn index() -> u8;
+    const INDEX: u8;
+
+    fn encode(&self) -> &[u8] {
+        bytes_of(self)
+    }
+
+    fn decode(buf: &[u8]) -> Option<&Self> {
+        try_from_bytes(buf).ok()
+    }
 }
 
 #[repr(C, packed)]
 #[derive(Debug, Copy, Clone, Pod, Zeroable)]
 pub struct SetPWMOut {
     pub update: u8,
-    pub outputs: [i16; 8],
+    pub outputs: [u16; 8],
+}
+impl APIType for SetPWMOut {
+    const INDEX: u8 = 246;
 }
 bitflags::bitflags! {
     #[repr(transparent)]
@@ -31,9 +42,7 @@ pub struct Status {
     pub faults: Faults,
 }
 impl APIType for Status {
-    fn index() -> u8 {
-        255
-    }
+    const INDEX: u8 = 255;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Pod, Zeroable)]

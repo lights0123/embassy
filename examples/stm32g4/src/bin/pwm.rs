@@ -15,22 +15,22 @@ async fn main(_spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
     info!("Hello World!");
 
-    let ch1 = PwmPin::new_ch1(p.PC0, OutputType::PushPull);
-    let mut pwm = SimplePwm::new(p.TIM1, Some(ch1), None, None, None, khz(10), Default::default());
-    let max = pwm.get_max_duty();
-    pwm.enable(Channel::Ch1);
+    // let ch1 = PwmPin::new_ch1(p.PC0, OutputType::PushPull);
+    // let mut pwm = SimplePwm::new(p.TIM1, Some(ch1), None, None, None, khz(10), Default::default());
+    // let max = pwm.get_max_duty();
+    // pwm.enable(Channel::Ch1);
 
-    info!("PWM initialized");
-    info!("PWM max duty {}", max);
+    // info!("PWM initialized");
+    // info!("PWM max duty {}", max);
 
-    loop {
-        pwm.set_duty(Channel::Ch1, 0);
-        Timer::after_millis(300).await;
-        pwm.set_duty(Channel::Ch1, max / 4);
-        Timer::after_millis(300).await;
-        pwm.set_duty(Channel::Ch1, max / 2);
-        Timer::after_millis(300).await;
-        pwm.set_duty(Channel::Ch1, max - 1);
-        Timer::after_millis(300).await;
-    }
+    // loop {
+    //     pwm.set_duty(Channel::Ch1, 0);
+    //     Timer::after_millis(300).await;
+    //     pwm.set_duty(Channel::Ch1, max / 4);
+    //     Timer::after_millis(300).await;
+    //     pwm.set_duty(Channel::Ch1, max / 2);
+    //     Timer::after_millis(300).await;
+    //     pwm.set_duty(Channel::Ch1, max - 1);
+    //     Timer::after_millis(300).await;
+    // }
 }

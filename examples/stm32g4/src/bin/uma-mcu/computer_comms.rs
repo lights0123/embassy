@@ -4,7 +4,6 @@ use bytemuck::{bytes_of, try_from_bytes};
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_stm32::peripherals;
-use embassy_stm32::usb::{Driver, Instance};
 use embassy_time::{Duration, Instant, Ticker};
 use embassy_usb::class::cdc_acm;
 use embassy_usb::driver::EndpointError;
@@ -15,6 +14,10 @@ use crate::uma_protocol::{self, APIType, Faults};
 
 const SYNC_BYTES: &[u8] = &[0xAA, 0x55];
 const MAX_PACKET_SIZE: usize = 32;
+
+type Driver = embassy_stm32::usb::Driver<'static, peripherals::USB>;
+type Sender = cdc_acm::Sender<'static, Driver>;
+type Receiver = cdc_acm::Receiver<'static, Driver>;
 
 #[derive(Debug)]
 struct PacketWriter {
@@ -50,10 +53,7 @@ impl PacketWriter {
     }
 }
 
-async fn status_writer<'d, T: Instance + 'd>(
-    sender: &mut cdc_acm::Sender<'d, Driver<'d, T>>,
-    state: &State,
-) -> Result<(), EndpointError> {
+async fn status_writer(sender: &mut Sender, state: &State) -> Result<(), EndpointError> {
     let mut writer = PacketWriter::new();
     let mut ticker = Ticker::every(Duration::from_millis(50));
     loop {
@@ -73,7 +73,7 @@ async fn status_writer<'d, T: Instance + 'd>(
     }
 }
 
-async fn status_task<'d, T: Instance + 'd>(sender: &mut cdc_acm::Sender<'d, Driver<'d, T>>, state: &State) {
+async fn status_task(sender: &mut Sender, state: &State) {
     loop {
         sender.wait_connection().await;
         info!("USB connection!");
@@ -124,10 +124,7 @@ fn parse_packet(packet: &[u8], state: &State) -> Option<()> {
     Some(())
 }
 
-async fn cmd_reader<'d, T: Instance + 'd>(
-    receiver: &mut cdc_acm::Receiver<'d, Driver<'d, T>>,
-    state: &State,
-) -> Result<(), EndpointError> {
+async fn cmd_reader(receiver: &mut Receiver, state: &State) -> Result<(), EndpointError> {
     let mut buf = [0; MAX_PACKET_SIZE];
     loop {
         let size = receiver.read_packet(&mut buf).await?;
@@ -136,7 +133,7 @@ async fn cmd_reader<'d, T: Instance + 'd>(
     }
 }
 
-async fn reader_task<'d, T: Instance + 'd>(sender: &mut cdc_acm::Receiver<'d, Driver<'d, T>>, state: &State) {
+async fn reader_task(sender: &mut Receiver, state: &State) {
     loop {
         sender.wait_connection().await;
         info!("USB connection!");
@@ -193,7 +190,7 @@ pub fn init_usb(p: crate::UsbResources, spawner: Spawner, shared_state: &'static
     let usb = builder.build();
 
     #[embassy_executor::task]
-    async fn usb_bg_task(mut usb: embassy_usb::UsbDevice<'static, Driver<'static, peripherals::USB>>) {
+    async fn usb_bg_task(mut usb: embassy_usb::UsbDevice<'static, Driver>) {
         usb.run().await;
     }
 
@@ -202,14 +199,11 @@ pub fn init_usb(p: crate::UsbResources, spawner: Spawner, shared_state: &'static
     let (sender, receiver) = class.split();
 
     #[embassy_executor::task]
-    async fn do_recv(
-        mut receiver: cdc_acm::Receiver<'static, Driver<'static, peripherals::USB>>,
-        state: &'static State,
-    ) {
+    async fn do_recv(mut receiver: Receiver, state: &'static State) {
         reader_task(&mut receiver, state).await;
     }
     #[embassy_executor::task]
-    async fn do_status(mut sender: cdc_acm::Sender<'static, Driver<'static, peripherals::USB>>, state: &'static State) {
+    async fn do_status(mut sender: Sender, state: &'static State) {
         status_task(&mut sender, state).await;
     }
 

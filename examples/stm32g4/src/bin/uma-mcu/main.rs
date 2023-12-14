@@ -28,13 +28,17 @@ assign_resources! {
         IWDG: IWDG,
         TIM1: TIM1,
         TIM2: TIM2,
+        /// left
         pwm_1a: PA8,
         pwm_2a: PA5,
         pwm_3a: PA6,
         pwm_4a: PB6,
         pwm_1b: PA9,
+        /// right
         pwm_2b: PA1,
         pwm_3b: PA4,
+        /// bridged to BOOT0
+        pwm_4b: PB7,
         motor_enable: PB0,
     }
     sbus: SbusResources {

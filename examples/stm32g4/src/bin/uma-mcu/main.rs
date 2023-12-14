@@ -14,6 +14,7 @@ use {defmt_rtt as _, panic_probe as _};
 mod computer_comms;
 mod interrupts;
 mod pwm_loop;
+mod sbus_in;
 mod state;
 mod uma_protocol;
 
@@ -34,8 +35,12 @@ assign_resources! {
         pwm_1b: PA9,
         pwm_2b: PA1,
         pwm_3b: PA4,
-        pwm_4b: PB7,
         motor_enable: PB0,
+    }
+    sbus: SbusResources {
+        sbus: PA10,
+        USART1: USART1,
+        dma: DMA1_CH1,
     }
 }
 

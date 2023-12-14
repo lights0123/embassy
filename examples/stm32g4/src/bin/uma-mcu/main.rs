@@ -35,9 +35,12 @@ assign_resources! {
         pwm_4a: PB6,
         pwm_1b: PA9,
         /// right
+        ///
+        /// maybe bridgeable to PA2 (LPUART TX)
         pwm_2b: PA1,
+        /// maybe bridgeable to PA3 (USART2 RX)
         pwm_3b: PA4,
-        /// bridged to BOOT0
+        /// bridged to BOOT0/PB8 (USART3 RX)
         pwm_4b: PB7,
         motor_enable: PB0,
     }

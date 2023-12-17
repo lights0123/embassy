@@ -1,14 +1,15 @@
 use core::cell::Cell;
 
+use defmt::Format;
 use embassy_time::Instant;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Format, Clone, Copy)]
 pub enum ControllerState {
     Stopped,
     RemoteControl,
     Autonomous,
 }
-#[derive(Debug, Clone, Copy)]
+#[derive(Format, Clone, Copy)]
 pub struct Controller {
     pub state: ControllerState,
     pub left: u16,
@@ -16,7 +17,7 @@ pub struct Controller {
     pub last_updated: Instant,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Format, Clone, Copy)]
 pub struct Computer {
     pub left: u16,
     pub right: u16,
@@ -33,7 +34,7 @@ impl Default for Computer {
     }
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Format, Clone)]
 pub struct State {
     pub controller: Cell<Option<Controller>>,
     pub computer: Cell<Computer>,

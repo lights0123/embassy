@@ -13,6 +13,7 @@ const MAX_COMPUTER_TIMEOUT: Duration = Duration::from_millis(1000);
 const SERVO_PWM_FREQ: Hertz = Hertz::hz(50);
 
 fn us_to_duty<T: CaptureCompare16bitInstance>(pwm: &SimplePwm<T>, us: u16) -> u16 {
+    // let us = us.clamp(1100, 1900);
     let max = pwm.get_max_duty();
     let period_width_us = 1_000_000 / SERVO_PWM_FREQ.0;
     let val = ((us as u32) * (max as u32) / period_width_us) as u16;
@@ -63,13 +64,13 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
             ControllerState::Autonomous => {
                 let computer_control = state.computer.get();
                 if now.duration_since(computer_control.last_updated) > MAX_COMPUTER_TIMEOUT {
-                    None
+                    Some((1500, 1500))
                 } else {
                     Some((computer_control.left, computer_control.right))
                 }
             }
         });
-        debug!("pwm loop: {}", control_signal);
+        trace!("pwm loop: {}", control_signal);
         if let Some((left, right)) = control_signal {
             motor_enable.set_high();
             set_pwm_us(&mut left_pwm, Channel::Ch1, left);

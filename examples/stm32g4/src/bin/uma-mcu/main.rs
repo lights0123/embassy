@@ -88,4 +88,5 @@ async fn main(spawner: Spawner) {
 
     computer_comms::init_usb(r.usb, spawner, shared_state);
     spawner.must_spawn(pwm_loop::do_status(r.out, shared_state));
+    spawner.must_spawn(sbus_in::do_status(r.sbus, shared_state));
 }

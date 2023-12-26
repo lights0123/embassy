@@ -17,7 +17,7 @@ fn us_to_duty<T: CaptureCompare16bitInstance>(pwm: &SimplePwm<T>, us: u16) -> u1
     let max = pwm.get_max_duty();
     let period_width_us = 1_000_000 / SERVO_PWM_FREQ.0;
     let val = ((us as u32) * (max as u32) / period_width_us) as u16;
-    debug!("Converted {}us to {} duty cycle / {}", us, val, max);
+    trace!("Converted {}us to {} duty cycle / {}", us, val, max);
     val
 }
 fn set_pwm_us<T: CaptureCompare16bitInstance>(pwm: &mut SimplePwm<T>, channel: Channel, us: u16) {

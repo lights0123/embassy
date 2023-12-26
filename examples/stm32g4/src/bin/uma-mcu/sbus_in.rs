@@ -24,7 +24,7 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
     config.stop_bits = StopBits::STOP2;
     config.parity = Parity::ParityEven;
     config.invert_rx = true;
-    let mut rx = unwrap!(UartRx::new(p.USART1, Irqs, p.sbus, p.dma, config));
+    let mut rx = unwrap!(UartRx::new(p.usart, Irqs, p.sbus, p.dma, config));
     let mut decoder = sbus::SBusPacketParser::new();
     let mut buf = [0; 25];
 
@@ -38,9 +38,11 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
         }
 
         if let Some(packet) = decoder.try_parse() {
-            debug!(
+            trace!(
                 "Received sbus packet failsafe = {} dropped_frame = {}, ch5 = {}!",
-                packet.failsafe, packet.frame_lost, packet.channels[4]
+                packet.failsafe,
+                packet.frame_lost,
+                packet.channels[4]
             );
             state.controller.set((!packet.failsafe).then(|| Controller {
                 state: match packet.channels[4] {

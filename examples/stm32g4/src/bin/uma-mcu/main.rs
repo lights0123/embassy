@@ -47,13 +47,14 @@ assign_resources! {
     }
     sbus: SbusResources {
         sbus: PA10,
-        USART1: USART1,
+        usart: USART1,
         dma: DMA1_CH1,
     }
     sport: SportResources {
         sport: PA3,
         usart: USART2,
-        dma: DMA1_CH2,
+        dma_1: DMA1_CH2,
+        dma_2: DMA1_CH3,
     }
 }
 
@@ -95,4 +96,5 @@ async fn main(spawner: Spawner) {
     computer_comms::init_usb(r.usb, spawner, shared_state);
     spawner.must_spawn(pwm_loop::do_status(r.out, shared_state));
     spawner.must_spawn(sbus_in::do_status(r.sbus, shared_state));
+    spawner.must_spawn(sport::do_status(r.sport, shared_state));
 }

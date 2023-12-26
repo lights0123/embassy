@@ -8,7 +8,7 @@ pub const GPS_HEADING: u16 = 0x0840;
 /// * ---- | -------
 /// * sensor ID(s)   | FRSKY_SP_GPS_SPEED ~ FRSKY_SP_GPS_SPEED+15 (0x0830 ~ 0x083f)
 /// * physical ID(s) | 4 - GPS
-/// * value          | (int) float * 1000 [kts]
+/// * value          | (int) float * 1000 (kts)
 /// *
 /// * \brief GPS speed
 /// * \warning The speed shown on OpenTX has a little drift, because the knots to shown value conversion is simplified.

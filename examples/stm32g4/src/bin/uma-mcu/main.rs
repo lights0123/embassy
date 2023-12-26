@@ -15,6 +15,7 @@ mod computer_comms;
 mod interrupts;
 mod pwm_loop;
 mod sbus_in;
+mod sport;
 mod state;
 mod uma_protocol;
 
@@ -48,6 +49,11 @@ assign_resources! {
         sbus: PA10,
         USART1: USART1,
         dma: DMA1_CH1,
+    }
+    sport: SportResources {
+        sport: PA3,
+        usart: USART2,
+        dma: DMA1_CH2,
     }
 }
 

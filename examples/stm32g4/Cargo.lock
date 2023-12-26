@@ -235,7 +235,7 @@ dependencies = [
  "embassy-sync",
  "embassy-time",
  "embedded-hal 0.2.7",
- "embedded-hal 1.0.0-rc.2",
+ "embedded-hal 1.0.0-rc.3",
  "embedded-hal-async",
  "embedded-storage",
  "embedded-storage-async",
@@ -249,6 +249,7 @@ dependencies = [
  "cortex-m",
  "critical-section",
  "defmt",
+ "document-features",
  "embassy-executor-macros",
  "embassy-time",
 ]
@@ -313,7 +314,7 @@ dependencies = [
  "embassy-time",
  "embassy-usb-driver",
  "embedded-hal 0.2.7",
- "embedded-hal 1.0.0-rc.2",
+ "embedded-hal 1.0.0-rc.3",
  "embedded-hal-async",
  "embedded-hal-nb",
  "embedded-io",
@@ -376,8 +377,9 @@ dependencies = [
  "cfg-if",
  "critical-section",
  "defmt",
+ "document-features",
  "embedded-hal 0.2.7",
- "embedded-hal 1.0.0-rc.2",
+ "embedded-hal 1.0.0-rc.3",
  "embedded-hal-async",
  "futures-util",
  "heapless",
@@ -416,26 +418,26 @@ dependencies = [
 
 [[package]]
 name = "embedded-hal"
-version = "1.0.0-rc.2"
+version = "1.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e57ec6ad0bc8eb967cf9c9f144177f5e8f2f6f02dad0b8b683f9f05f6b22def"
+checksum = "bc402f79e1fd22731ca945b4f97b5ff37e7b3f379312595c42bb2e8811c29920"
 
 [[package]]
 name = "embedded-hal-async"
-version = "1.0.0-rc.2"
+version = "1.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b5ad4a01f9cb38117ef85f5cd32176d63875e7eab99c5b60e8492bfdc16dd63"
+checksum = "fa1fba2ef2ffb35d614acc6fb323ddf7facc45c069f24544d49ea54e5043626d"
 dependencies = [
- "embedded-hal 1.0.0-rc.2",
+ "embedded-hal 1.0.0-rc.3",
 ]
 
 [[package]]
 name = "embedded-hal-nb"
-version = "1.0.0-rc.2"
+version = "1.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67c4325112d63ff5991e2841960a1320516c33ff7237e924eaab0772b1123703"
+checksum = "3cde58312a0675b6c0389eb0dceb2bf8c735a697b0b5baa1f23bbaf030636deb"
 dependencies = [
- "embedded-hal 1.0.0-rc.2",
+ "embedded-hal 1.0.0-rc.3",
  "nb 1.1.0",
 ]
 
@@ -784,7 +786,7 @@ dependencies = [
 [[package]]
 name = "stm32-metapac"
 version = "14.0.0"
-source = "git+https://github.com/embassy-rs/stm32-data-generated?tag=stm32-data-8f5fcae8c289c1ad481cc3a2bb37db023a61599c#89a60b10a409287a98c413e9d2c08c619ae439f0"
+source = "git+https://github.com/embassy-rs/stm32-data-generated?tag=stm32-data-8caf2f0bda28baf4393899dc67ba57f058087f5a#84082dac601f365d2d3deed9b460b88877ef9120"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",

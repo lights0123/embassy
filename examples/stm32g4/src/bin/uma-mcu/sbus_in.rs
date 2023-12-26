@@ -29,16 +29,10 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
     let mut buf = [0; 25];
 
     loop {
-        // wait to receive 1 full byte before waiting for idle so we're not
-        // busy looping
-        let err = match rx.read(&mut buf[..1]).await {
-            Ok(()) => rx.read_until_idle(&mut buf[1..]).await,
-            Err(e) => Err(e),
-        };
-        match err {
+        match rx.read_until_idle(&mut buf).await {
             Ok(bytes) => {
-                trace!("Read {} bytes", bytes);
-                decoder.push_bytes(&buf[..bytes + 1])
+                trace!("Read {} sbus bytes", bytes);
+                decoder.push_bytes(&buf[..bytes])
             }
             Err(e) => warn!("Failed sbus reading: {}", e),
         }

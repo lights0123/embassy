@@ -13,7 +13,7 @@ const MAX_COMPUTER_TIMEOUT: Duration = Duration::from_millis(1000);
 const SERVO_PWM_FREQ: Hertz = Hertz::hz(50);
 
 fn us_to_duty<T: CaptureCompare16bitInstance>(pwm: &SimplePwm<T>, us: u16) -> u16 {
-    // let us = us.clamp(1100, 1900);
+    let us = us.clamp(1100, 1900);
     let max = pwm.get_max_duty();
     let period_width_us = 1_000_000 / SERVO_PWM_FREQ.0;
     let val = ((us as u32) * (max as u32) / period_width_us) as u16;
@@ -27,7 +27,7 @@ fn set_pwm_us<T: CaptureCompare16bitInstance>(pwm: &mut SimplePwm<T>, channel: C
 #[embassy_executor::task]
 pub async fn do_status(p: crate::OutResources, state: &'static State) {
     let mut motor_enable = Output::new(p.motor_enable, Level::High, Speed::Low);
-    let mut timer = Ticker::every(Duration::from_millis(50));
+    let mut timer = Ticker::every(Duration::from_hz(SERVO_PWM_FREQ.0 as u64));
     let left_signal = PwmPin::new_ch1(p.pwm_1a, OutputType::PushPull);
     let right_signal = PwmPin::new_ch2(p.pwm_2b, OutputType::PushPull);
     let mut left_pwm = SimplePwm::new(

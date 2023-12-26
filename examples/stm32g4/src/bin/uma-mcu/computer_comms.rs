@@ -68,22 +68,27 @@ async fn status_writer(sender: &mut Sender, state: &State) -> Result<(), Endpoin
             temperature: 0,
             faults,
         };
-        sender.write_packet(writer.write(&data)).await?;
+        let buf = writer.write(&data);
+        debug!("write len {}", buf.len());
+        sender.write_packet(buf).await?;
         ticker.next().await;
     }
 }
 
-async fn status_task(sender: &mut Sender, state: &State) {
+#[embassy_executor::task]
+async fn status_task(mut sender: Sender, state: &'static State) {
     loop {
+        info!("waiting for status conn");
         sender.wait_connection().await;
         info!("USB connection!");
-        let _ = status_writer(sender, state).await;
+        let _ = status_writer(&mut sender, state).await;
         info!("USB disconnection!");
         embassy_futures::yield_now().await;
     }
 }
 
 fn handle_pwm_out(msg: &uma_protocol::SetPWMOut, state: &State) {
+    debug!("got new pwm message");
     state.computer.set(state::Computer {
         left: msg.outputs[0],
         right: msg.outputs[1],
@@ -92,7 +97,8 @@ fn handle_pwm_out(msg: &uma_protocol::SetPWMOut, state: &State) {
 }
 
 fn parse_packet(packet: &[u8], state: &State) -> Option<()> {
-    if packet.len() < SYNC_BYTES.len() + size_of::<uma_protocol::PacketInfo>() + 1 {
+    let full_len = packet.len();
+    if full_len < SYNC_BYTES.len() + size_of::<uma_protocol::PacketInfo>() + 1 {
         warn!("Received invalid packet of size {}", packet.len());
         return None;
     }
@@ -105,16 +111,16 @@ fn parse_packet(packet: &[u8], state: &State) -> Option<()> {
     let header: &uma_protocol::PacketInfo =
         try_from_bytes(packet.get(..size_of::<uma_protocol::PacketInfo>())?).ok()?;
     let packet = packet.get(size_of::<uma_protocol::PacketInfo>()..)?;
-    if header.packet_length as usize != packet.len() {
+    if header.packet_length as usize != full_len {
         warn!(
             "Received packet of len {}, but header says len {}",
-            packet.len(),
-            header.packet_length
+            full_len, header.packet_length
         );
         return None;
     }
     let data = packet.get(..packet.len() - 1)?;
-    match header.destination_addr {
+    trace!("got new api index {} of size {}", header.api_index, data.len());
+    match header.api_index {
         uma_protocol::SetPWMOut::INDEX => {
             handle_pwm_out(APIType::decode(data)?, state);
         }
@@ -133,11 +139,12 @@ async fn cmd_reader(receiver: &mut Receiver, state: &State) -> Result<(), Endpoi
     }
 }
 
-async fn reader_task(sender: &mut Receiver, state: &State) {
+#[embassy_executor::task]
+async fn reader_task(mut sender: Receiver, state: &'static State) {
     loop {
         sender.wait_connection().await;
         info!("USB connection!");
-        let _ = cmd_reader(sender, state).await;
+        let _ = cmd_reader(&mut sender, state).await;
         info!("USB disconnection!");
         embassy_futures::yield_now().await;
     }
@@ -198,15 +205,6 @@ pub fn init_usb(p: crate::UsbResources, spawner: Spawner, shared_state: &'static
 
     let (sender, receiver) = class.split();
 
-    #[embassy_executor::task]
-    async fn do_recv(mut receiver: Receiver, state: &'static State) {
-        reader_task(&mut receiver, state).await;
-    }
-    #[embassy_executor::task]
-    async fn do_status(mut sender: Sender, state: &'static State) {
-        status_task(&mut sender, state).await;
-    }
-
-    spawner.must_spawn(do_recv(receiver, shared_state));
-    spawner.must_spawn(do_status(sender, shared_state));
+    spawner.must_spawn(reader_task(receiver, shared_state));
+    spawner.must_spawn(status_task(sender, shared_state));
 }

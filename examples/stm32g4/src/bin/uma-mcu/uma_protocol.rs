@@ -1,4 +1,5 @@
 use bytemuck::{bytes_of, try_from_bytes, Pod, Zeroable};
+use defmt::Format;
 
 pub trait APIType: Pod {
     const INDEX: u8;
@@ -13,7 +14,7 @@ pub trait APIType: Pod {
 }
 
 #[repr(C, packed)]
-#[derive(Debug, Copy, Clone, Pod, Zeroable)]
+#[derive(Copy, Clone, Pod, Zeroable)]
 pub struct SetPWMOut {
     pub update: u8,
     pub outputs: [u16; 8],
@@ -23,7 +24,7 @@ impl APIType for SetPWMOut {
 }
 bitflags::bitflags! {
     #[repr(transparent)]
-    #[derive(Debug, Clone, Copy, Pod, Zeroable)]
+    #[derive(Clone, Copy, Pod, Zeroable)]
     pub struct Faults: u8 {
         const ESTOP = 0b00000001;
         const UNDERVOLTAGE = 0b00000010;
@@ -35,7 +36,7 @@ bitflags::bitflags! {
     }
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Pod, Zeroable)]
+#[derive(Copy, Clone, Pod, Zeroable)]
 pub struct Status {
     pub voltage: u8,
     pub temperature: u8,
@@ -45,7 +46,7 @@ impl APIType for Status {
     const INDEX: u8 = 255;
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Pod, Zeroable)]
+#[derive(Format, Copy, Clone, Pod, Zeroable)]
 pub struct PacketInfo {
     pub packet_length: u8,
     pub destination_addr: u8,

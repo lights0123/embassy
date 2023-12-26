@@ -34,8 +34,16 @@ impl Default for Computer {
     }
 }
 
+#[derive(Format, Clone, Copy)]
+pub struct GpsStats {
+    pub speed: u32,
+    pub heading: u32,
+    pub last_updated: Instant,
+}
+
 #[derive(Default, Format, Clone)]
 pub struct State {
     pub controller: Cell<Option<Controller>>,
     pub computer: Cell<Computer>,
+    pub gps_stats: Cell<Option<GpsStats>>,
 }

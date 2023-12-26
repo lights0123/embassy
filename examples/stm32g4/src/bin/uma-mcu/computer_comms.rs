@@ -9,6 +9,7 @@ use embassy_usb::class::cdc_acm;
 use embassy_usb::driver::EndpointError;
 use static_cell::StaticCell;
 
+use crate::config::MAX_RC_TIMEOUT;
 use crate::state::{self, ControllerState, State};
 use crate::uma_protocol::{self, APIType, Faults};
 
@@ -57,7 +58,12 @@ async fn status_writer(sender: &mut Sender, state: &State) -> Result<(), Endpoin
     let mut writer = PacketWriter::new();
     let mut ticker = Ticker::every(Duration::from_millis(50));
     loop {
-        let faults = match state.controller.get().map(|controller| controller.state) {
+        let faults = match state
+            .controller
+            .get()
+            .filter(|controller| controller.last_updated.elapsed() < MAX_RC_TIMEOUT)
+            .map(|controller| controller.state)
+        {
             Some(ControllerState::Stopped) => Faults::ESTOP,
             Some(ControllerState::RemoteControl) => Faults::MANUAL_CONTROL,
             Some(ControllerState::Autonomous) => Faults::empty(),
@@ -69,7 +75,7 @@ async fn status_writer(sender: &mut Sender, state: &State) -> Result<(), Endpoin
             faults,
         };
         let buf = writer.write(&data);
-        debug!("write len {}", buf.len());
+        trace!("usb write len {}", buf.len());
         sender.write_packet(buf).await?;
         ticker.next().await;
     }
@@ -80,15 +86,15 @@ async fn status_task(mut sender: Sender, state: &'static State) {
     loop {
         info!("waiting for status conn");
         sender.wait_connection().await;
-        info!("USB connection!");
+        info!("status USB connection!");
         let _ = status_writer(&mut sender, state).await;
-        info!("USB disconnection!");
+        info!("status USB disconnection!");
         embassy_futures::yield_now().await;
     }
 }
 
 fn handle_pwm_out(msg: &uma_protocol::SetPWMOut, state: &State) {
-    debug!("got new pwm message");
+    trace!("got new pwm message");
     state.computer.set(state::Computer {
         left: msg.outputs[0],
         right: msg.outputs[1],
@@ -140,11 +146,11 @@ async fn cmd_reader(receiver: &mut Receiver, state: &State) -> Result<(), Endpoi
 }
 
 #[embassy_executor::task]
-async fn reader_task(mut sender: Receiver, state: &'static State) {
+async fn reader_task(mut rx: Receiver, state: &'static State) {
     loop {
-        sender.wait_connection().await;
+        rx.wait_connection().await;
         info!("USB connection!");
-        let _ = cmd_reader(&mut sender, state).await;
+        let _ = cmd_reader(&mut rx, state).await;
         info!("USB disconnection!");
         embassy_futures::yield_now().await;
     }

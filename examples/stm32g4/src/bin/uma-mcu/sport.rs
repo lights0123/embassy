@@ -1,21 +1,49 @@
 use defmt::*;
-use embassy_stm32::gpio::{Level, Output, OutputOpenDrain, Pull, Speed};
-use embassy_stm32::usart::{Config, Uart, UartRx};
-use embassy_time::Instant;
+use embassy_stm32::usart::{Config, Uart};
+use embassy_time::Duration;
 
 use self::out::SportSensorReading;
 use crate::interrupts::Irqs;
-use crate::state::{Controller, ControllerState, State};
+use crate::state::State;
 
 mod out;
 
 const POLL_HEADER: u8 = 0x7E;
+const MAX_TIMEOUT: Duration = Duration::from_millis(1000);
 
 pub fn get_requested_id(buf: &[u8]) -> Option<u8> {
     #[deny(unused_variables)]
     match buf {
         [.., POLL_HEADER, id] => Some(*id),
         _ => None,
+    }
+}
+
+#[derive(Default)]
+struct StatusHandler {
+    last_gps_val: u8,
+}
+
+impl StatusHandler {
+    fn handle(&mut self, sport_id: u8, state: &State) -> Option<(u16, u32)> {
+        match sport_id {
+            // Physical ID 4 - GPS / altimeter (normal precision)
+            0x83 => {
+                self.last_gps_val += 1;
+                state
+                    .gps_stats
+                    .get()
+                    .filter(|stats| stats.last_updated.elapsed() < MAX_TIMEOUT)
+                    .map(|stats| {
+                        if self.last_gps_val % 2 == 0 {
+                            (out::GPS_SPEED, stats.speed)
+                        } else {
+                            (out::GPS_HEADING, stats.heading)
+                        }
+                    })
+            }
+            _ => None,
+        }
     }
 }
 
@@ -30,7 +58,7 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
     ));
     let mut buf = [0; 14];
     let mut out_buf = SportSensorReading::default();
-    let start = Instant::now();
+    let mut handler = StatusHandler::default();
 
     loop {
         // in case we somehow end up in an infinite loop, let other tasks run
@@ -52,16 +80,12 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
 
         trace!("sport request {}", sport_id);
 
-        match sport_id {
-            // Physical ID 4 - GPS / altimeter (normal precision)
-            0x83 => {
-                let val = start.elapsed().as_millis() / 10 % 100;
-                let buf = out_buf.encode(out::GPS_SPEED, (val as f32 / 1.852 * 1000.0) as u32);
-                if let Err(e) = uart.write(buf).await {
-                    warn!("failed to write sport buf of len {}: {}", buf.len(), e);
-                }
+        let output = handler.handle(sport_id, state);
+
+        if let Some(output) = output {
+            if let Err(e) = uart.write(out_buf.encode(output.0, output.1)).await {
+                warn!("failed to write sport buf of len {}: {}", buf.len(), e);
             }
-            _ => {}
         }
     }
 }

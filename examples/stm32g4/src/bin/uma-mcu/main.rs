@@ -11,6 +11,7 @@ use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
 
 mod computer_comms;
+mod config;
 mod interrupts;
 mod pwm_loop;
 mod sbus_in;
@@ -93,7 +94,7 @@ async fn main(spawner: Spawner) {
     let shared_state = SHARED_STATE.init_with(Default::default);
 
     computer_comms::init_usb(r.usb, spawner, shared_state);
-    spawner.must_spawn(pwm_loop::do_status(r.out, shared_state));
     spawner.must_spawn(sbus_in::do_status(r.sbus, shared_state));
     spawner.must_spawn(sport::do_status(r.sport, shared_state));
+    spawner.must_spawn(pwm_loop::do_status(r.out, shared_state));
 }

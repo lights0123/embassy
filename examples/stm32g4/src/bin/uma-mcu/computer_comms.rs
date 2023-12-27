@@ -102,6 +102,15 @@ fn handle_pwm_out(msg: &uma_protocol::SetPWMOut, state: &State) {
     });
 }
 
+fn handle_gps_stats(msg: &uma_protocol::SetGpsStats, state: &State) {
+    trace!("got new gps message");
+    state.gps_stats.set(Some(state::GpsStats {
+        speed: msg.speed,
+        heading: msg.heading,
+        last_updated: Instant::now(),
+    }));
+}
+
 fn parse_packet(packet: &[u8], state: &State) -> Option<()> {
     let full_len = packet.len();
     if full_len < SYNC_BYTES.len() + size_of::<uma_protocol::PacketInfo>() + 1 {
@@ -127,9 +136,8 @@ fn parse_packet(packet: &[u8], state: &State) -> Option<()> {
     let data = packet.get(..packet.len() - 1)?;
     trace!("got new api index {} of size {}", header.api_index, data.len());
     match header.api_index {
-        uma_protocol::SetPWMOut::INDEX => {
-            handle_pwm_out(APIType::decode(data)?, state);
-        }
+        uma_protocol::SetPWMOut::INDEX => handle_pwm_out(APIType::decode(data)?, state),
+        uma_protocol::SetGpsStats::INDEX => handle_gps_stats(APIType::decode(data)?, state),
         _ => {}
     }
 

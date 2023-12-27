@@ -22,6 +22,16 @@ pub struct SetPWMOut {
 impl APIType for SetPWMOut {
     const INDEX: u8 = 246;
 }
+
+#[repr(C, packed)]
+#[derive(Copy, Clone, Pod, Zeroable)]
+pub struct SetGpsStats {
+    pub speed: u32,
+    pub heading: u32,
+}
+impl APIType for SetGpsStats {
+    const INDEX: u8 = 230;
+}
 bitflags::bitflags! {
     #[repr(transparent)]
     #[derive(Clone, Copy, Pod, Zeroable)]

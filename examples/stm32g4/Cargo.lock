@@ -102,6 +102,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "cichlid"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e08e0ab3e9609bd1d15a7be7cc6e0a31681eee4a1021513494a0fb9c0e1bda34"
+
+[[package]]
 name = "cortex-m"
 version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -339,6 +345,7 @@ dependencies = [
  "assign-resources",
  "bitflags 2.4.1",
  "bytemuck",
+ "cichlid",
  "cortex-m",
  "cortex-m-rt",
  "defmt",

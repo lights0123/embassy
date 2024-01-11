@@ -42,8 +42,17 @@ pub struct GpsStats {
 }
 
 #[derive(Default, Format, Clone)]
+pub struct FrskySensor {
+    pub voltage: Cell<u32>,
+    pub current: Cell<u32>,
+    pub temp_1: Cell<u32>,
+    pub temp_2: Cell<u32>,
+}
+
+#[derive(Default, Format, Clone)]
 pub struct State {
     pub controller: Cell<Option<Controller>>,
     pub computer: Cell<Computer>,
     pub gps_stats: Cell<Option<GpsStats>>,
+    pub sensor: FrskySensor,
 }

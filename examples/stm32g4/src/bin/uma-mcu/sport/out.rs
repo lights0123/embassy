@@ -1,3 +1,27 @@
+/// FRSKY_SP_CURR ~ FRSKY_SP_CURR+15 (0x0200 ~ 0x020f)
+/// Physical ID: 3 - FAS current sensor
+/// Value: (int) float * 10 [A]
+/// VFAS/FSC current
+pub const FAS_CURRENT: u16 = 0x0200;
+
+/// FRSKY_SP_VFAS ~ FRSKY_SP_VFAS+15 (0x0210 ~ 0x021f)
+/// Physical ID: 3 - FAS current sensor
+/// Value: (int) float * 100 [V]
+/// VFAS/FSC voltage
+pub const FAS_VOLTAGE: u16 = 0x0210;
+
+/// FRSKY_SP_T1 ~ FRSKY_SP_T1+15 (0x0400 ~ 0x040f)
+/// Physical ID: Unknown
+/// Value: int [°C]
+/// Temperature
+pub const FAS_TEMP_1: u16 = 0x0400;
+
+/// FRSKY_SP_T2 ~ FRSKY_SP_T2+15 (0x0410 ~ 0x041f)
+/// Physical ID: Unknown
+/// Value: int [°C]
+/// Temperature
+pub const FAS_TEMP_2: u16 = 0x0410;
+
 /// * sensor ID(s)   | FRSKY_SP_GPS_COURSE ~ FRSKY_SP_GPS_COURSE+15 (0x0840 ~ 0x084f)
 /// * physical ID(s) | 4 - GPS
 /// * value          | (int) float * 100 [°]

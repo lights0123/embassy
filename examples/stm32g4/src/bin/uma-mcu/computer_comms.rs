@@ -31,6 +31,7 @@ impl PacketWriter {
         buf[..SYNC_BYTES.len()].copy_from_slice(&SYNC_BYTES);
         PacketWriter { buf, number: 1 }
     }
+    #[must_use]
     fn write<T: APIType>(&mut self, msg: &T) -> &[u8] {
         let mut written = SYNC_BYTES.len();
         let packet_length = SYNC_BYTES.len() + size_of::<T>() + size_of::<uma_protocol::PacketInfo>() + 1;
@@ -70,8 +71,10 @@ async fn status_writer(sender: &mut Sender, state: &State) -> Result<(), Endpoin
             None => Faults::CONTROLLER_DISCONNECT,
         };
         let data = uma_protocol::Status {
-            voltage: 0,
-            temperature: 0,
+            voltage: state.sensor.voltage.get(),
+            current: state.sensor.current.get(),
+            temp_1: state.sensor.temp_1.get() as u8,
+            temp_2: state.sensor.temp_2.get() as u8,
             faults,
         };
         let buf = writer.write(&data);

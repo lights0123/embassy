@@ -45,11 +45,13 @@ bitflags::bitflags! {
         const CONTROLLER_DISCONNECT = 0b01000000;
     }
 }
-#[repr(C)]
+#[repr(C, packed)]
 #[derive(Copy, Clone, Pod, Zeroable)]
 pub struct Status {
-    pub voltage: u8,
-    pub temperature: u8,
+    pub voltage: u32,
+    pub current: u32,
+    pub temp_1: u8,
+    pub temp_2: u8,
     pub faults: Faults,
 }
 impl APIType for Status {

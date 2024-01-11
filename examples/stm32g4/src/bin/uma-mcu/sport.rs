@@ -6,6 +6,7 @@ use self::out::SportSensorReading;
 use crate::interrupts::Irqs;
 use crate::state::State;
 
+mod input;
 mod out;
 
 const POLL_HEADER: u8 = 0x7E;
@@ -61,6 +62,8 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
     let mut handler = StatusHandler::default();
 
     let mut has_received_sport = false;
+    let mut has_sent_sport = false;
+    let mut last_id = None;
     loop {
         // in case we somehow end up in an infinite loop, let other tasks run
         embassy_futures::yield_now().await;
@@ -71,11 +74,25 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
             }
             Err(e) => {
                 warn!("Failed sport reading: {}", e);
+                last_id = None;
                 continue;
             }
         };
 
         let Some(sport_id) = get_requested_id(buf) else {
+            if let Some(_sport_id) = last_id {
+                if let Some(input::SportPacket { typ: 0x10, id, val }) = input::parse(buf) {
+                    match id {
+                        out::FAS_VOLTAGE => state.sensor.voltage.set(val),
+                        out::FAS_CURRENT => state.sensor.current.set(val),
+                        out::FAS_TEMP_1 => state.sensor.temp_1.set(val),
+                        out::FAS_TEMP_2 => state.sensor.temp_2.set(val),
+                        _ => {}
+                    }
+                    trace!("{}", state.sensor);
+                }
+            }
+            last_id = None;
             continue;
         };
         if !has_received_sport {
@@ -83,14 +100,20 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
             info!("Got first sport packet!");
         }
 
-        trace!("sport request {}", sport_id);
+        trace!("sport request {:x}", sport_id);
 
         let output = handler.handle(sport_id, state);
 
         if let Some(output) = output {
+            if !has_sent_sport {
+                has_sent_sport = true;
+                info!("Sent first sport packet!");
+            }
             if let Err(e) = uart.write(out_buf.encode(output.0, output.1)).await {
                 warn!("failed to write sport buf of len {}: {}", buf.len(), e);
             }
+        } else {
+            last_id = Some(sport_id);
         }
     }
 }

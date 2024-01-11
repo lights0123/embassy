@@ -60,6 +60,7 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
     let mut out_buf = SportSensorReading::default();
     let mut handler = StatusHandler::default();
 
+    let mut has_received_sport = false;
     loop {
         // in case we somehow end up in an infinite loop, let other tasks run
         embassy_futures::yield_now().await;
@@ -77,6 +78,10 @@ pub async fn do_status(p: crate::SportResources, state: &'static State) {
         let Some(sport_id) = get_requested_id(buf) else {
             continue;
         };
+        if !has_received_sport {
+            has_received_sport = true;
+            info!("Got first sport packet!");
+        }
 
         trace!("sport request {}", sport_id);
 

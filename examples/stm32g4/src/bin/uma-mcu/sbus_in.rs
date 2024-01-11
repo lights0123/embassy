@@ -28,6 +28,7 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
     let mut decoder = sbus::SBusPacketParser::new();
     let mut buf = [0; 25];
 
+    let mut has_received_sbus = false;
     loop {
         match rx.read_until_idle(&mut buf).await {
             Ok(bytes) => {
@@ -38,6 +39,10 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
         }
 
         if let Some(packet) = decoder.try_parse() {
+            if !has_received_sbus {
+                has_received_sbus = true;
+                info!("Got first sbus packet!");
+            }
             trace!(
                 "Received sbus packet failsafe = {} dropped_frame = {}, ch5 = {}!",
                 packet.failsafe,

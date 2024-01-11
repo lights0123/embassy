@@ -168,8 +168,8 @@ pub fn init_usb(p: crate::UsbResources, spawner: Spawner, shared_state: &'static
     let driver = Driver::new(p.USB, crate::interrupts::Irqs, p.PA12, p.PA11);
 
     let mut config = embassy_usb::Config::new(0xc0de, 0xcafe);
-    config.manufacturer = Some("Embassy");
-    config.product = Some("USB-Serial Example");
+    config.manufacturer = Some("UM Autonomy");
+    config.product = Some("PCB");
     config.serial_number = Some("123456");
 
     config.device_class = 0xEF;

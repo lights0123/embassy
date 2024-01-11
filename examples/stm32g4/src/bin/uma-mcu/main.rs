@@ -39,8 +39,8 @@ assign_resources! {
         ///
         /// maybe bridgeable to PA2 (LPUART TX)
         pwm_2b: PA1,
-        /// maybe bridgeable to PA3 (USART2 RX)
-        pwm_3b: PA4,
+        /// bridged to PA3 (USART2 RX)
+        sport_pwm_3b: PA4,
         /// bridged to BOOT0/PB8 (USART3 RX)
         pwm_4b: PB7,
         motor_enable: PB0,
@@ -70,7 +70,7 @@ async fn main(spawner: Spawner) {
     config.rcc.pll = Some(Pll {
         source: PllSource::HSE(Hertz(8_000_000)),
         prediv_m: PllM::DIV2,
-        mul_n: PllN::MUL72,
+        mul_n: PllN::MUL85,
         div_p: None,
         div_q: plldivq,
         // Main system clock at 144 MHz

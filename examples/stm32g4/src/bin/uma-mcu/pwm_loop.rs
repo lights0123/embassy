@@ -10,6 +10,7 @@ use crate::config::{MAX_COMPUTER_TIMEOUT, MAX_RC_TIMEOUT};
 use crate::state::{ControllerState, State};
 
 const SERVO_PWM_FREQ: Hertz = Hertz::hz(50);
+const REST_PWM_VALUE: u16 = 1500;
 
 fn us_to_duty<T: CaptureCompare16bitInstance>(pwm: &SimplePwm<T>, us: u16) -> u16 {
     let us = us.clamp(1100, 1900);
@@ -25,7 +26,7 @@ fn set_pwm_us<T: CaptureCompare16bitInstance>(pwm: &mut SimplePwm<T>, channel: C
 
 #[embassy_executor::task]
 pub async fn do_status(p: crate::OutResources, state: &'static State) {
-    let mut motor_enable = Output::new(p.motor_enable, Level::High, Speed::Low);
+    let mut motor_enable = Output::new(p.motor_enable, Level::Low, Speed::Low);
     let mut timer = Ticker::every(Duration::from_hz(SERVO_PWM_FREQ.0 as u64));
     let left_signal = PwmPin::new_ch1(p.pwm_1a, OutputType::PushPull);
     let right_signal = PwmPin::new_ch2(p.pwm_2b, OutputType::PushPull);
@@ -47,12 +48,12 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
         SERVO_PWM_FREQ,
         Default::default(),
     );
-    left_pwm.enable(Channel::Ch1);
-    set_pwm_us(&mut left_pwm, Channel::Ch1, 1500);
-    right_pwm.enable(Channel::Ch2);
-    set_pwm_us(&mut right_pwm, Channel::Ch2, 1500);
+    set_pwm_us(&mut left_pwm, Channel::Ch1, REST_PWM_VALUE);
+    set_pwm_us(&mut right_pwm, Channel::Ch2, REST_PWM_VALUE);
     let mut wdt = IndependentWatchdog::new(p.IWDG, 100 * 1000);
     wdt.unleash();
+    left_pwm.enable(Channel::Ch1);
+    right_pwm.enable(Channel::Ch2);
 
     loop {
         let now = Instant::now();
@@ -63,7 +64,7 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
             ControllerState::Autonomous => {
                 let computer_control = state.computer.get();
                 if now - computer_control.last_updated > MAX_COMPUTER_TIMEOUT {
-                    Some((1500, 1500))
+                    Some((REST_PWM_VALUE, REST_PWM_VALUE))
                 } else {
                     Some((computer_control.left, computer_control.right))
                 }
@@ -76,6 +77,8 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
             set_pwm_us(&mut right_pwm, Channel::Ch2, right);
         } else {
             motor_enable.set_low();
+            set_pwm_us(&mut left_pwm, Channel::Ch1, REST_PWM_VALUE);
+            set_pwm_us(&mut right_pwm, Channel::Ch2, REST_PWM_VALUE);
         }
         wdt.pet();
         timer.next().await;

@@ -3,7 +3,7 @@ use core::cell::Cell;
 use defmt::Format;
 use embassy_time::Instant;
 
-#[derive(Format, Clone, Copy)]
+#[derive(Format, Clone, Copy, PartialEq, Eq)]
 pub enum ControllerState {
     Stopped,
     RemoteControl,

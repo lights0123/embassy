@@ -29,16 +29,18 @@ assign_resources! {
         IWDG: IWDG,
         TIM1: TIM1,
         TIM2: TIM2,
+        TIM16: TIM16,
         /// left
-        pwm_1a: PA8,
-        pwm_2a: PA5,
-        pwm_3a: PA6,
+        left_motor: PA8,
+        hbridge_left: PA5,
+        hbridge_right: PA6,
         pwm_4a: PB6,
-        pwm_1b: PA9,
+        /// waterblast
+        waterblast: PA9,
         /// right
         ///
         /// maybe bridgeable to PA2 (LPUART TX)
-        pwm_2b: PA1,
+        right_motor: PA1,
         /// bridged to PA3 (USART2 RX)
         sport_pwm_3b: PA4,
         /// bridged to BOOT0/PB8 (USART3 RX)

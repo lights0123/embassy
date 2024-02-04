@@ -101,6 +101,8 @@ fn handle_pwm_out(msg: &uma_protocol::SetPWMOut, state: &State) {
     state.computer.set(state::Computer {
         left: msg.outputs[0],
         right: msg.outputs[1],
+        hbridge: msg.outputs[2],
+        waterblast: msg.outputs[3] > 1500,
         last_updated: Instant::now(),
     });
 }

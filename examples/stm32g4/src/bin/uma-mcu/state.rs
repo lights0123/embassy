@@ -14,6 +14,8 @@ pub struct Controller {
     pub state: ControllerState,
     pub left: u16,
     pub right: u16,
+    pub hbridge: u16,
+    pub waterblast: bool,
     pub last_updated: Instant,
 }
 
@@ -21,6 +23,8 @@ pub struct Controller {
 pub struct Computer {
     pub left: u16,
     pub right: u16,
+    pub hbridge: u16,
+    pub waterblast: bool,
     pub last_updated: Instant,
 }
 
@@ -29,6 +33,8 @@ impl Default for Computer {
         Self {
             left: 1500,
             right: 1500,
+            hbridge: 1500,
+            waterblast: false,
             last_updated: Instant::from_ticks(0),
         }
     }

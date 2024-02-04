@@ -75,6 +75,7 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
                     state,
                     left,
                     right,
+                    waterblast: false,
                     last_updated: Instant::now(),
                 }
             }));

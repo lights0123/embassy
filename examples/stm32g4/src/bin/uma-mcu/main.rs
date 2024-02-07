@@ -34,7 +34,7 @@ assign_resources! {
         left_motor: PA8,
         hbridge_left: PA5,
         hbridge_right: PA6,
-        pwm_1b: PB6,
+        pwm_1b: PA9,
         /// waterblast
         waterblast: PB6,
         /// right

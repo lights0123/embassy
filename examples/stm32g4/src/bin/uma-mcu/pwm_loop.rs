@@ -39,23 +39,23 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
     let mut motor_enable = Output::new(p.motor_enable, Level::Low, Speed::Low);
     let mut timer = Ticker::every(Duration::from_hz(SERVO_PWM_FREQ.0 as u64));
     let mut water_blast = Output::new(p.waterblast, Level::Low, Speed::Low);
-    let left_signal = PwmPin::new_ch1(p.left_motor, OutputType::PushPull);
-    let right_signal = PwmPin::new_ch2(p.right_motor, OutputType::PushPull);
+    let right_signal = PwmPin::new_ch1(p.left_motor, OutputType::PushPull);
+    let left_signal = PwmPin::new_ch2(p.right_motor, OutputType::PushPull);
     let hbridge_left = PwmPin::new_ch1(p.hbridge_left, OutputType::PushPull);
     let hbridge_right = PwmPin::new_ch1(p.hbridge_right, OutputType::PushPull);
-    let mut left_pwm = SimplePwm::new(
+    let mut right_pwm = SimplePwm::new(
         p.TIM1,
-        Some(left_signal),
+        Some(right_signal),
         None,
         None,
         None,
         SERVO_PWM_FREQ,
         Default::default(),
     );
-    let mut right_pwm = SimplePwm::new(
+    let mut left_pwm = SimplePwm::new(
         p.TIM2,
         Some(hbridge_left),
-        Some(right_signal),
+        Some(left_signal),
         None,
         None,
         SERVO_PWM_FREQ,
@@ -70,12 +70,12 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
         SERVO_PWM_FREQ,
         Default::default(),
     );
-    set_pwm_us(&mut left_pwm, Channel::Ch1, REST_PWM_VALUE);
-    set_pwm_us(&mut right_pwm, Channel::Ch2, REST_PWM_VALUE);
+    set_pwm_us(&mut right_pwm, Channel::Ch1, REST_PWM_VALUE);
+    set_pwm_us(&mut left_pwm, Channel::Ch2, REST_PWM_VALUE);
     let mut wdt = IndependentWatchdog::new(p.IWDG, 100 * 1000);
     wdt.unleash();
-    left_pwm.enable(Channel::Ch1);
-    right_pwm.enable(Channel::Ch2);
+    right_pwm.enable(Channel::Ch1);
+    left_pwm.enable(Channel::Ch2);
 
     loop {
         let now = Instant::now();
@@ -103,18 +103,18 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
             set_pwm_us(&mut left_pwm, Channel::Ch1, left);
             set_pwm_us(&mut right_pwm, Channel::Ch2, right);
             if hbridge > REST_PWM_VALUE {
-                set_pwm_us_full(&mut right_pwm, Channel::Ch1, hbridge);
+                set_pwm_us_full(&mut left_pwm, Channel::Ch1, hbridge);
                 hbridge_right_pwm.set_duty(Channel::Ch1, 0);
             } else {
                 set_pwm_us_full(&mut hbridge_right_pwm, Channel::Ch1, hbridge);
-                right_pwm.set_duty(Channel::Ch1, 0);
+                left_pwm.set_duty(Channel::Ch1, 0);
             }
             water_blast.set_level(waterblast.into());
         } else {
             motor_enable.set_low();
-            set_pwm_us(&mut left_pwm, Channel::Ch1, REST_PWM_VALUE);
-            set_pwm_us(&mut right_pwm, Channel::Ch2, REST_PWM_VALUE);
-            right_pwm.set_duty(Channel::Ch1, 0);
+            set_pwm_us(&mut right_pwm, Channel::Ch1, REST_PWM_VALUE);
+            set_pwm_us(&mut left_pwm, Channel::Ch2, REST_PWM_VALUE);
+            left_pwm.set_duty(Channel::Ch1, 0);
             hbridge_right_pwm.set_duty(Channel::Ch1, 0);
             water_blast.set_low();
         }

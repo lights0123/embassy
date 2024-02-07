@@ -34,9 +34,9 @@ assign_resources! {
         left_motor: PA8,
         hbridge_left: PA5,
         hbridge_right: PA6,
-        pwm_4a: PB6,
+        pwm_1b: PB6,
         /// waterblast
-        waterblast: PA9,
+        waterblast: PB6,
         /// right
         ///
         /// maybe bridgeable to PA2 (LPUART TX)

@@ -75,7 +75,8 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
                     state,
                     left,
                     right,
-                    waterblast: false,
+                    hbridge: OUT_SIGNAL_MID,
+                    waterblast: packet.channels[0] > 1400,
                     last_updated: Instant::now(),
                 }
             }));

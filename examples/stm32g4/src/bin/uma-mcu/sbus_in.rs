@@ -63,6 +63,10 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
                 };
                 let left = get_pwm_value(packet.channels[5]);
                 let right = get_pwm_value(packet.channels[6]);
+                let mut hbridge = get_pwm_value(packet.channels[3]);
+                if DEADZONE_RANGE.contains(&hbridge) {
+                    hbridge = OUT_SIGNAL_MID;
+                }
                 if state != ControllerState::Autonomous {
                     override_autonomous = false;
                 } else if override_autonomous {
@@ -75,8 +79,9 @@ pub async fn do_status(p: crate::SbusResources, state: &'static State) {
                     state,
                     left,
                     right,
-                    hbridge: OUT_SIGNAL_MID,
+                    hbridge,
                     waterblast: packet.channels[0] > 1400,
+                    flywheel: packet.channels[1] > 1400,
                     last_updated: Instant::now(),
                 }
             }));

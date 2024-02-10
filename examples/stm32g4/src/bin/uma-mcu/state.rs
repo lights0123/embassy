@@ -16,6 +16,7 @@ pub struct Controller {
     pub right: u16,
     pub hbridge: u16,
     pub waterblast: bool,
+    pub flywheel: bool,
     pub last_updated: Instant,
 }
 
@@ -25,6 +26,7 @@ pub struct Computer {
     pub right: u16,
     pub hbridge: u16,
     pub waterblast: bool,
+    pub flywheel: bool,
     pub last_updated: Instant,
 }
 
@@ -35,6 +37,7 @@ impl Default for Computer {
             right: 1500,
             hbridge: 1500,
             waterblast: false,
+            flywheel: false,
             last_updated: Instant::from_ticks(0),
         }
     }

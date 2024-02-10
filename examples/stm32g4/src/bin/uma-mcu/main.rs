@@ -29,12 +29,12 @@ assign_resources! {
         IWDG: IWDG,
         TIM1: TIM1,
         TIM2: TIM2,
-        TIM16: TIM16,
+        TIM3: TIM3,
         /// left
         left_motor: PA8,
-        hbridge_left: PA5,
+        hbridge_left: PA9,
         hbridge_right: PA6,
-        pwm_1b: PA9,
+        flywheel: PA5,
         /// waterblast
         waterblast: PB6,
         /// right

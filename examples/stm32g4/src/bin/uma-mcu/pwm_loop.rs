@@ -113,7 +113,7 @@ pub async fn do_status(p: crate::OutResources, state: &'static State) {
                 set_pwm_us_full(&mut right_pwm, Channel::Ch2, hbridge);
                 hbridge_right_pwm.set_duty(Channel::Ch1, 0);
             } else {
-                info!(
+                debug!(
                     "going right at {}, converted to {}/{}",
                     hbridge,
                     us_to_duty_full(&hbridge_right_pwm, hbridge),
